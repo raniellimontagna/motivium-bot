@@ -45,14 +45,14 @@ export async function baseErrorHandler(error: any, client: Client<true>) {
 /**
  * Handle errors in services
  */
-export function handleServiceError(error: any, context: string) {
+export function handleServiceError(error: any, context: string, userMessage?: string) {
   logger.error(`[${context}] Error:`, error)
 
-  const message = error instanceof Error ? error.message : String(error)
+  const rawMessage = error instanceof Error ? error.message : String(error)
   return {
     success: false,
     error: error,
-    message: `Erro em ${context}: ${message}`,
+    message: userMessage || `Erro em ${context}: ${rawMessage}`,
   } as const
 }
 

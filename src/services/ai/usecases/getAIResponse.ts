@@ -42,7 +42,11 @@ export async function getAIResponse(message: string, history: Message[]) {
   // Fallback to Gemini if ChatGPT fails (e.g. quota or other errors)
   if (!process.env.GEMINI_API_KEY) {
     logger.warn('Gemini API key not configured, skipping fallback')
-    return handleServiceError(chatGPTResult.error, 'AI Service (ChatGPT)')
+    const userMessage = chatGPTResult.isQuotaError 
+      ? 'O serviço de IA atingiu o limite de uso diário. Por favor, tente novamente mais tarde. 😔'
+      : 'O serviço de IA está temporariamente indisponível. Por favor, tente mais tarde. 😔'
+      
+    return handleServiceError(chatGPTResult.error, 'AI Service (ChatGPT)', userMessage)
   }
 
   logger.warn('ChatGPT failed, trying Gemini API')
@@ -54,5 +58,13 @@ export async function getAIResponse(message: string, history: Message[]) {
   }
 
   logger.error('Error getting Gemini response:', geminiResult.error)
-  return handleServiceError(geminiResult.error, 'AI Service (Gemini)')
+  
+  const isGeminiQuota = geminiResult.error?.status === 429 || 
+    (typeof geminiResult.error?.message === 'string' && geminiResult.error.message.includes('quota'))
+
+  const userMessage = isGeminiQuota
+    ? 'O sistema de IA atingiu o limite máximo de requisições. Por favor, tente novamente em alguns instantes. 😔'
+    : 'Desculpe, não consegui processar sua mensagem no momento. Por favor, tente novamente mais tarde. 😔'
+
+  return handleServiceError(geminiResult.error, 'AI Service (Gemini)', userMessage)
 }

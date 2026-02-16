@@ -23,7 +23,7 @@ export class OpenAIProvider implements AIProvider {
         ...formattedHistory,
         { role: 'user', content: message },
       ],
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       max_tokens: 1024,
       temperature: 1,
     })

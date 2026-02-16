@@ -58,7 +58,7 @@ RUN pnpm config set network-timeout 300000 && \
 COPY prisma/ ./prisma/
 
 # Generate Prisma Client manually after copying prisma files
-RUN npx prisma generate --schema=./prisma/schema/schema.prisma
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 COPY --from=builder /usr/src/app/build ./build
 COPY --from=builder /usr/src/app/settings.json ./settings.json
