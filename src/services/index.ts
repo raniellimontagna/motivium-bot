@@ -4,12 +4,14 @@ export * from './economy/coinGeckoService.js'
 export * from './economy/awesomeApiService.js'
 
 // AI Services
-export * from './ai/openai.js'
-export * from './ai/gemini.js'
-export * from './ai/ai-handler.js'
+export * from './ai/usecases/getAIResponse.js'
+export * from './ai/infrastructure/OpenAIProvider.js'
+export * from './ai/infrastructure/GeminiProvider.js'
+export * from './ai/domain/AIProvider.js'
 
 // News Services
-export * from './news/newsService.js'
+export * from './news/usecases/fetchNews.js'
+export * from './news/domain/NewsProvider.js'
 
 // CEP Services
 export * from './cep/viacep.js'

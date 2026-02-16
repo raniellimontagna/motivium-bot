@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js'
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 
 import { type ForecastDayData, getCurrentWeather, getForecast } from '#services'
 

@@ -1,7 +1,5 @@
 import he from 'he'
-import cron from 'node-cron'
 import NodeCache from 'node-cache'
-import { Client } from 'discord.js'
 
 import { logger, parseEnvList } from '#settings'
 import { sendMessage } from '#utils'
@@ -14,7 +12,9 @@ import {
   getAgroNews,
 } from '#services'
 
-import { NewsCategory, ScheduleNewsChannels, ScheduleNewsMessage } from './news-channels.types.js'
+import { NewsCategory, ScheduleNewsMessage } from './news-channels.types.js'
+
+import { createScheduler } from '#discord'
 
 // Set cache expiration time to 24 hours, with a check period of 1 hour
 const newsCaches: Record<NewsCategory, NodeCache> = Object.values(NewsCategory).reduce(
@@ -25,58 +25,30 @@ const newsCaches: Record<NewsCategory, NodeCache> = Object.values(NewsCategory).
   {} as Record<NewsCategory, NodeCache>,
 )
 
-/**
- * Initializes the scheduler for news channels.
- * @param client Discord client
- */
-export async function initializeNewsChannelsScheduler(client: Client) {
-  const categories = [
-    { env: 'AI_NEWS_CHANNELS_IDS', fetchNews: getAINews, name: NewsCategory.AI },
-    { env: 'AGRO_NEWS_CHANNELS_IDS', fetchNews: getAgroNews, name: NewsCategory.Agro },
-    { env: 'TECH_NEWS_CHANNELS_IDS', fetchNews: getTechNews, name: NewsCategory.Tech },
-    { env: 'SPACE_NEWS_CHANNELS_IDS', fetchNews: getSpaceNews, name: NewsCategory.Space },
-    { env: 'BRAZIL_NEWS_CHANNELS_IDS', fetchNews: getBrazilNews, name: NewsCategory.Brazil },
-    { env: 'ECONOMY_NEWS_CHANNELS_IDS', fetchNews: getEconomyNews, name: NewsCategory.Economy },
-  ]
+createScheduler({
+  name: 'News channels',
+  cron: '0,30 * * * *', // Every 30 minutes
+  async run(client) {
+    const categories = [
+      { env: 'AI_NEWS_CHANNELS_IDS', fetchNews: getAINews, name: NewsCategory.AI },
+      { env: 'AGRO_NEWS_CHANNELS_IDS', fetchNews: getAgroNews, name: NewsCategory.Agro },
+      { env: 'TECH_NEWS_CHANNELS_IDS', fetchNews: getTechNews, name: NewsCategory.Tech },
+      { env: 'SPACE_NEWS_CHANNELS_IDS', fetchNews: getSpaceNews, name: NewsCategory.Space },
+      { env: 'BRAZIL_NEWS_CHANNELS_IDS', fetchNews: getBrazilNews, name: NewsCategory.Brazil },
+      { env: 'ECONOMY_NEWS_CHANNELS_IDS', fetchNews: getEconomyNews, name: NewsCategory.Economy },
+    ]
 
-  categories.forEach(({ env, fetchNews, name }) => {
-    const channelIds = parseEnvList(process.env[env])
+    for (const { env, fetchNews, name } of categories) {
+      const channelIds = parseEnvList(process.env[env])
 
-    if (!channelIds.length) {
-      logger.warn(`No ${name} channels configured`)
-      return
+      if (!channelIds.length) continue
+
+      for (const channelId of channelIds) {
+        await scheduleNewsMessage({ client, category: name, channelId, getNewsFunction: fetchNews })
+      }
     }
-
-    scheduleNewsChannels({
-      client,
-      channelIds,
-      category: name,
-      getNewsFunction: fetchNews,
-    })
-  })
-}
-
-function scheduleNewsChannels({
-  client,
-  category,
-  channelIds,
-  getNewsFunction,
-}: ScheduleNewsChannels) {
-  channelIds.forEach((channelId) => {
-    const channel = client.channels.cache.get(channelId)
-
-    if (!channel || !channel.isTextBased()) {
-      logger.warn(`Channel with ID ${channelId} not found or not text-based`)
-      return
-    }
-
-    cron.schedule(
-      '0,30 * * * *', // Send news every 30 minutes
-      () => scheduleNewsMessage({ client, category, channelId, getNewsFunction }),
-      { timezone: 'America/Sao_Paulo' },
-    )
-  })
-}
+  },
+})
 
 async function scheduleNewsMessage({
   client,

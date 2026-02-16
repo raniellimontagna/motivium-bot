@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder } from 'discord.js'
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { PromotionCategory, CATEGORY_SPECIFIC_CONFIG, CATEGORY_METADATA, getPromotionsService } from '#schedulers'
 import { logger } from '#settings'
 

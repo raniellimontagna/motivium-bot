@@ -1,4 +1,4 @@
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { TelegramService, TelegramError, TelegramAuthError } from '#services'
 import { parseEnvList } from '#settings'
 import {

@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js'
 
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { Coins, getCoinData } from '#services'
 
 createCommand({

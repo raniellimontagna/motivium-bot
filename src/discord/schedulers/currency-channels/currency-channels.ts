@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import cron from 'node-cron'
 import { Client, Colors } from 'discord.js'
 
 import utc from 'dayjs/plugin/utc.js'
@@ -66,27 +65,31 @@ const currencyConfigs: Record<CurrencyType, CurrencyConfig> = {
   },
 }
 
-export async function initializeCurrencyChannelsScheduler(client: Client) {
-  // Schedule the dollar exchange rate message every weekday at 9 AM to 6 PM
-  cron.schedule('0 9-18 * * 1-5', () => scheduleCurrencyMessage(client, 'dollar'), {
-    timezone: 'America/Sao_Paulo',
-  })
+import { createScheduler } from '#discord'
 
-  // Schedule the bitcoin exchange rate message every weekday at 6 AM to 10 PM
-  cron.schedule('0 6-22/1 * * *', () => scheduleCurrencyMessage(client, 'bitcoin'), {
-    timezone: 'America/Sao_Paulo',
-  })
+createScheduler({
+  name: 'Dollar exchange rate',
+  cron: '0 9-18 * * 1-5', // Every weekday at 9 AM to 6 PM
+  run: (client) => scheduleCurrencyMessage(client, 'dollar'),
+})
 
-  // Schedule the ethereum exchange rate message every weekday at 6 AM to 10 PM
-  cron.schedule('0 6-22/1 * * *', () => scheduleCurrencyMessage(client, 'ethereum'), {
-    timezone: 'America/Sao_Paulo',
-  })
+createScheduler({
+  name: 'Bitcoin exchange rate',
+  cron: '0 6-22/1 * * *', // Every hour from 6 AM to 10 PM
+  run: (client) => scheduleCurrencyMessage(client, 'bitcoin'),
+})
 
-  // Schedule the solana exchange rate message every weekday at 6 AM to 10 PM
-  cron.schedule('0 6-22/1 * * *', () => scheduleCurrencyMessage(client, 'solana'), {
-    timezone: 'America/Sao_Paulo',
-  })
-}
+createScheduler({
+  name: 'Ethereum exchange rate',
+  cron: '0 6-22/1 * * *', // Every hour from 6 AM to 10 PM
+  run: (client) => scheduleCurrencyMessage(client, 'ethereum'),
+})
+
+createScheduler({
+  name: 'Solana exchange rate',
+  cron: '0 6-22/1 * * *', // Every hour from 6 AM to 10 PM
+  run: (client) => scheduleCurrencyMessage(client, 'solana'),
+})
 
 async function scheduleCurrencyMessage(client: Client, type: CurrencyType): Promise<void> {
   const config = currencyConfigs[type]

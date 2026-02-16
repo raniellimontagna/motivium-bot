@@ -9,8 +9,14 @@ import { addRoute } from 'rou3'
 import { baseCommandLog, CommandData, CommandType } from './base.command.js'
 import { baseEventLog, EventData } from './base.event.js'
 import { baseResponderLog, ResponderData, ResponderType } from './base.responder.js'
+import { baseSchedulerLog } from './base.scheduler.js'
 import { baseStorage } from './base.storage.js'
-import { BaseStorageCommandConfig, BaseStorageRespondersConfig } from './base.types.js'
+import {
+  BaseStorageCommandConfig,
+  BaseStorageRespondersConfig,
+  BaseStorageSchedulersConfig,
+  SchedulerData,
+} from './base.types.js'
 
 interface CommandCreatorOptions extends Partial<BaseStorageCommandConfig> {
   defaultMemberPermissions?: PermissionResolvable[]
@@ -21,6 +27,7 @@ type ResponderCreatorOptions = Partial<BaseStorageRespondersConfig>
 interface SetupCreatorsOptions {
   commands?: CommandCreatorOptions
   responders?: ResponderCreatorOptions
+  schedulers?: BaseStorageSchedulersConfig
 }
 export function setupCreators(options: SetupCreatorsOptions = {}) {
   /** @commands */
@@ -34,6 +41,9 @@ export function setupCreators(options: SetupCreatorsOptions = {}) {
   baseStorage.config.responders.middleware = options.responders?.middleware
   baseStorage.config.responders.onNotFound = options.responders?.onNotFound
   baseStorage.config.responders.onError = options.responders?.onError
+
+  /** @schedulers */
+  baseStorage.config.schedulers.onError = options.schedulers?.onError
 
   return {
     createCommand: function <
@@ -78,6 +88,13 @@ export function setupCreators(options: SetupCreatorsOptions = {}) {
         baseResponderLog(customId, type)
       }
 
+      return data
+    },
+    createScheduler: function (data: SchedulerData) {
+      /** @store */
+      baseStorage.schedulers.set(data.name, data)
+
+      baseSchedulerLog(data)
       return data
     },
   }

@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType } from 'discord.js'
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 
 import {
   celsiusToFahrenheit,

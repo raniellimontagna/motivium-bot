@@ -1,4 +1,4 @@
-import { ClientEvents, Collection, CommandInteraction } from 'discord.js'
+import { Client, ClientEvents, Collection, CommandInteraction } from 'discord.js'
 import { GenericCommandData } from './base.command.ts'
 import { EventsCollection } from './base.event.ts'
 import { GenericResponderInteraction, ResponderRouter } from './base.responder.ts'
@@ -90,17 +90,30 @@ interface BaseStorageRespondersConfig {
 interface BaseStorageConfig {
   commands: BaseStorageCommandConfig
   responders: BaseStorageRespondersConfig
+  schedulers: BaseStorageSchedulersConfig
+}
+
+export interface SchedulerData {
+  name: string
+  cron: string
+  run(client: Client): void | Promise<void>
+}
+
+export interface BaseStorageSchedulersConfig {
+  onError?(error: unknown, scheduler: SchedulerData): void
 }
 
 interface BaseStorageLoadLogs {
   commands: string[]
   responders: string[]
   events: string[]
+  schedulers: string[]
 }
 
 export interface BaseStorage {
   commands: Collection<string, GenericCommandData>
   events: Collection<keyof ClientEvents, EventsCollection>
+  schedulers: Collection<string, SchedulerData>
   responders: ResponderRouter
   config: BaseStorageConfig
   loadLogs: BaseStorageLoadLogs

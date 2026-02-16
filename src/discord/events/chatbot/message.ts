@@ -1,7 +1,7 @@
 import { ChannelType } from 'discord.js'
 
 import { logger, parseEnvList } from '#settings'
-import { createEvent } from '#base'
+import { createEvent } from '#discord'
 import { repositories } from '#database'
 import { getAIResponse } from '#services'
 

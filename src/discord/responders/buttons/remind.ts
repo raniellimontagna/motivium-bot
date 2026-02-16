@@ -1,4 +1,5 @@
-import { createResponder, ResponderType } from '#base'
+import { createResponder } from '#discord'
+import { ResponderType } from '#base'
 import { time } from 'discord.js'
 import { z } from 'zod'
 

@@ -1,4 +1,4 @@
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { TelegramService } from '#services'
 import {
   ApplicationCommandOptionType,

@@ -1,4 +1,4 @@
-import { createEvent } from '#base'
+import { createEvent } from '#discord'
 import { logger } from '#settings'
 
 createEvent({

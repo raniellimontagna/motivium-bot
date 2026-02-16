@@ -9,15 +9,10 @@ import {
 } from './base.command.js'
 import { baseStorage } from './base.storage.js'
 import { baseRegisterEvents } from './base.event.js'
+import { baseRegisterSchedulers } from './base.scheduler.js'
 import { baseResponderHandler } from './base.responder.js'
 import ck from 'chalk'
 import glob from 'fast-glob'
-
-import {
-  initializeCurrencyChannelsScheduler,
-  initializeNewsChannelsScheduler,
-  initializePromotions,
-} from '#schedulers'
 
 export const BASE_VERSION = '1.0.6' as const // DO NOT CHANGE THIS VAR
 
@@ -73,7 +68,7 @@ async function loadModules(workdir: string, directories: string[] = []) {
     { absolute: true, cwd: workdir },
   )
 
-  await Promise.all(files.map((path) => import(`file://${path}`)))
+  await Promise.all(files.map((path: string) => import(`file://${path}`)))
 }
 
 function createClient(token: string, options: BootstrapOptions) {
@@ -93,11 +88,7 @@ function createClient(token: string, options: BootstrapOptions) {
     logger.log(ck.green(`● ${ck.greenBright.underline(client.user.username)} online ✓`))
 
     await baseRegisterCommands(client)
-    initializeCurrencyChannelsScheduler(client)
-    initializeNewsChannelsScheduler(client)
-
-    // Sistema unificado de promoções (inclui GERAL + categorias específicas)
-    initializePromotions(client)
+    baseRegisterSchedulers(client)
 
     process.on('uncaughtException', (err) => baseErrorHandler(err, client))
     process.on('unhandledRejection', (err) => baseErrorHandler(err, client))
@@ -129,6 +120,7 @@ function loadLogs() {
     baseStorage.loadLogs.commands,
     baseStorage.loadLogs.responders,
     baseStorage.loadLogs.events,
+    baseStorage.loadLogs.schedulers,
   ].flat()
   logs.forEach((text) => logger.log(text))
 }

@@ -1,4 +1,4 @@
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js'
 
 import { calculateBMI } from '#functions'

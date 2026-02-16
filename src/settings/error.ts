@@ -42,6 +42,20 @@ export async function baseErrorHandler(error: any, client: Client<true>) {
     .catch(logger.error)
 }
 
+/**
+ * Handle errors in services
+ */
+export function handleServiceError(error: any, context: string) {
+  logger.error(`[${context}] Error:`, error)
+
+  const message = error instanceof Error ? error.message : String(error)
+  return {
+    success: false,
+    error: error,
+    message: `Erro em ${context}: ${message}`,
+  } as const
+}
+
 process.on('SIGINT', () => {
   logger.log(ck.dim('...'))
   process.exit(0)

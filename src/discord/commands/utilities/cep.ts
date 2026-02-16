@@ -1,5 +1,5 @@
 import { getCep } from '#services'
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 
 import {
   ApplicationCommandOptionType,

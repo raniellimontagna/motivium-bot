@@ -6,17 +6,20 @@ import { createRouter } from 'rou3'
 export const baseStorage: BaseStorage = {
   commands: new Collection(),
   events: new Collection(),
+  schedulers: new Collection(),
   responders: createRouter(),
   config: {
     commands: {
       guilds: [],
     },
     responders: {},
+    schedulers: {},
   },
   loadLogs: {
     commands: [],
     responders: [],
     events: [],
+    schedulers: [],
   },
 }
 /** DO NOT CHANGE THIS FILE */

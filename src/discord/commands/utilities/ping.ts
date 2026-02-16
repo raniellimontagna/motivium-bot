@@ -1,4 +1,4 @@
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { createRow } from '@magicyan/discord'
 import { ApplicationCommandType, ButtonBuilder, ButtonStyle } from 'discord.js'
 

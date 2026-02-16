@@ -1,4 +1,4 @@
-import { createCommand } from '#base'
+import { createCommand } from '#discord'
 import { getCachedAvailableCotations, getExchangeRate } from '#services'
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js'
 

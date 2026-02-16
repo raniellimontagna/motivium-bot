@@ -1,19 +1,19 @@
-import type { Client } from 'discord.js'
+import { Client } from 'discord.js'
+import { createScheduler } from '#discord'
 import { PromotionsService } from './promotions.service.js'
 
 let promotionsService: PromotionsService | null = null
 
-/**
- * Initialize the unified promotions system
- */
-export function initializePromotions(client: Client): PromotionsService {
-  if (!promotionsService) {
-    promotionsService = new PromotionsService(client)
-    promotionsService.initialize()
-  }
-
-  return promotionsService
-}
+createScheduler({
+  name: 'Promotions',
+  cron: '*/5 * * * *', // Every 5 minutes (default search interval)
+  run(client: Client) {
+    if (!promotionsService) {
+      promotionsService = new PromotionsService(client)
+      promotionsService.initialize()
+    }
+  },
+})
 
 /**
  * Get the instance of the promotions service
