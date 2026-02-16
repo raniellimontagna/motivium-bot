@@ -1,7 +1,7 @@
 import cron from 'node-cron'
 import { Client, TextChannel, AttachmentBuilder, EmbedBuilder, Colors } from 'discord.js'
 
-import { logger } from '#settings'
+import { logger, parseEnvList } from '#settings'
 import { sendMessage } from '#utils'
 import { TelegramService } from '#services'
 
@@ -79,220 +79,106 @@ export class PromotionsService {
    * Load configurations for the promotion categories from environment variables
    */
   private loadPromotionConfigurations(): void {
-    // General Configuration (replaces the old system)
-    const generalChannels = process.env.PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const generalTelegramChannels =
-      process.env.TELEGRAM_PROMOTIONS_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (generalChannels.length && generalTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.GENERAL, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.GENERAL],
+    const categoryEnvMap: Array<{
+      category: PromotionCategory
+      discordEnv: string
+      telegramEnv: string
+    }> = [
+      {
         category: PromotionCategory.GENERAL,
-        discordChannelIds: generalChannels,
-        telegramChannels: generalTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.GENERAL]],
-      })
-    }
-
-    // Tech Configuration
-    const techChannels = process.env.TECH_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const techTelegramChannels =
-      process.env.TECH_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (techChannels.length && techTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.TECH, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.TECH],
+        discordEnv: 'PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'TELEGRAM_PROMOTIONS_CHANNELS',
+      },
+      {
         category: PromotionCategory.TECH,
-        discordChannelIds: techChannels,
-        telegramChannels: techTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.TECH]],
-      })
-    }
-
-    // Gaming Configuration
-    const gamingChannels =
-      process.env.GAMING_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const gamingTelegramChannels =
-      process.env.GAMING_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (gamingChannels.length && gamingTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.GAMING, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.GAMING],
+        discordEnv: 'TECH_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'TECH_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.GAMING,
-        discordChannelIds: gamingChannels,
-        telegramChannels: gamingTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.GAMING]],
-      })
-    }
-
-    // Fitness Configuration
-    const fitnessChannels =
-      process.env.FITNESS_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const fitnessTelegramChannels =
-      process.env.FITNESS_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (fitnessChannels.length && fitnessTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.FITNESS, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.FITNESS],
+        discordEnv: 'GAMING_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'GAMING_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.FITNESS,
-        discordChannelIds: fitnessChannels,
-        telegramChannels: fitnessTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.FITNESS]],
-      })
-    }
-
-    // Automotive Configuration
-    const automotiveChannels =
-      process.env.AUTOMOTIVE_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const automotiveTelegramChannels =
-      process.env.AUTOMOTIVE_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (automotiveChannels.length && automotiveTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.AUTOMOTIVE, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.AUTOMOTIVE],
+        discordEnv: 'FITNESS_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'FITNESS_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.AUTOMOTIVE,
-        discordChannelIds: automotiveChannels,
-        telegramChannels: automotiveTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.AUTOMOTIVE]],
-      })
-    }
-
-    // Fashion Configuration
-    const fashionChannels =
-      process.env.FASHION_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const fashionTelegramChannels =
-      process.env.FASHION_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (fashionChannels.length && fashionTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.FASHION, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.FASHION],
+        discordEnv: 'AUTOMOTIVE_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'AUTOMOTIVE_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.FASHION,
-        discordChannelIds: fashionChannels,
-        telegramChannels: fashionTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.FASHION]],
-      })
-    }
-
-    // Home Configuration
-    const homeChannels = process.env.HOME_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const homeTelegramChannels =
-      process.env.HOME_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (homeChannels.length && homeTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.HOME, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.HOME],
+        discordEnv: 'FASHION_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'FASHION_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.HOME,
-        discordChannelIds: homeChannels,
-        telegramChannels: homeTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.HOME]],
-      })
-    }
-
-    // Bugs Configuration
-    const bugsChannels = process.env.BUGS_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const bugsTelegramChannels =
-      process.env.BUGS_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (bugsChannels.length && bugsTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.BUGS, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.BUGS],
+        discordEnv: 'HOME_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'HOME_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.BUGS,
-        discordChannelIds: bugsChannels,
-        telegramChannels: bugsTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.BUGS]],
-      })
-    }
-
-    const aliexpressChannels =
-      process.env.ALIEXPRESS_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const aliexpressTelegramChannels =
-      process.env.ALIEXPRESS_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (aliexpressChannels.length && aliexpressTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.ALIEXPRESS, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.ALIEXPRESS],
+        discordEnv: 'BUGS_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'BUGS_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.ALIEXPRESS,
-        discordChannelIds: aliexpressChannels,
-        telegramChannels: aliexpressTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.ALIEXPRESS]],
-      })
-    }
-
-    // Cupons Configuration
-    const cuponsChannels =
-      process.env.CUPONS_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const cuponsTelegramChannels =
-      process.env.CUPONS_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (cuponsChannels.length && cuponsTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.CUPONS, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.CUPONS],
+        discordEnv: 'ALIEXPRESS_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'ALIEXPRESS_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.CUPONS,
-        discordChannelIds: cuponsChannels,
-        telegramChannels: cuponsTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.CUPONS]],
-      })
-    }
-
-    // Beleza Configuration
-    const beautyChannels =
-      process.env.BEAUTY_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const beautyTelegramChannels =
-      process.env.BEAUTY_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (beautyChannels.length && beautyTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.BEAUTY, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.BEAUTY],
+        discordEnv: 'CUPONS_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'CUPONS_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.BEAUTY,
-        discordChannelIds: beautyChannels,
-        telegramChannels: beautyTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.BEAUTY]],
-      })
-    }
-
-    // Food Configuration
-    const foodChannels = process.env.FOOD_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const foodTelegramChannels =
-      process.env.FOOD_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (foodChannels.length && foodTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.FOOD, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.FOOD],
+        discordEnv: 'BEAUTY_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'BEAUTY_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.FOOD,
-        discordChannelIds: foodChannels,
-        telegramChannels: foodTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.FOOD]],
-      })
-    }
-
-    // Hardware Configuration
-    const hardwareChannels =
-      process.env.HARDWARE_PROMOTIONS_CHANNELS_IDS?.split(',').filter(Boolean) || []
-    const hardwareTelegramChannels =
-      process.env.HARDWARE_TELEGRAM_CHANNELS?.split(',').filter(Boolean) || []
-
-    if (hardwareChannels.length && hardwareTelegramChannels.length) {
-      this.promotionConfigs.set(PromotionCategory.HARDWARE, {
-        ...DEFAULT_PROMOTION_CONFIG,
-        ...CATEGORY_SPECIFIC_CONFIG[PromotionCategory.HARDWARE],
+        discordEnv: 'FOOD_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'FOOD_TELEGRAM_CHANNELS',
+      },
+      {
         category: PromotionCategory.HARDWARE,
-        discordChannelIds: hardwareChannels,
-        telegramChannels: hardwareTelegramChannels,
-        keywords: [...PROMOTION_KEYWORDS[PromotionCategory.HARDWARE]],
+        discordEnv: 'HARDWARE_PROMOTIONS_CHANNELS_IDS',
+        telegramEnv: 'HARDWARE_TELEGRAM_CHANNELS',
+      },
+    ]
+
+    for (const { category, discordEnv, telegramEnv } of categoryEnvMap) {
+      this.addPromotionConfig({
+        category,
+        discordChannelIds: parseEnvList(process.env[discordEnv]),
+        telegramChannels: parseEnvList(process.env[telegramEnv]),
       })
     }
+  }
+
+  private addPromotionConfig({
+    category,
+    discordChannelIds,
+    telegramChannels,
+  }: {
+    category: PromotionCategory
+    discordChannelIds: string[]
+    telegramChannels: string[]
+  }): void {
+    if (!discordChannelIds.length || !telegramChannels.length) return
+
+    this.promotionConfigs.set(category, {
+      ...DEFAULT_PROMOTION_CONFIG,
+      ...CATEGORY_SPECIFIC_CONFIG[category],
+      category,
+      discordChannelIds,
+      telegramChannels,
+      keywords: [...PROMOTION_KEYWORDS[category]],
+    })
   }
 
   /**

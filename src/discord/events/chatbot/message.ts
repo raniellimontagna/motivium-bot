@@ -1,6 +1,6 @@
 import { ChannelType } from 'discord.js'
 
-import { logger } from '#settings'
+import { logger, parseEnvList } from '#settings'
 import { createEvent } from '#base'
 import { repositories } from '#database'
 import { getAIResponse } from '#services'
@@ -45,9 +45,9 @@ createEvent({
 function isValidMessage(message: any) {
   if (message.author.bot) return false // Evita loops com bots
 
-  const chatbotChannelsIds = process.env.AI_CHANNELS_IDS?.split(',')
+  const chatbotChannelsIds = parseEnvList(process.env.AI_CHANNELS_IDS)
 
-  if (!chatbotChannelsIds?.length || !chatbotChannelsIds.includes(message.channelId)) return false
+  if (!chatbotChannelsIds.length || !chatbotChannelsIds.includes(message.channelId)) return false
 
   if (message.channel.type !== ChannelType.GuildText) {
     logger.warn(`Channel ${message.channelId} is not a text channel`)

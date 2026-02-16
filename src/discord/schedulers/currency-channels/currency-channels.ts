@@ -6,7 +6,7 @@ import utc from 'dayjs/plugin/utc.js'
 import timezone from 'dayjs/plugin/timezone.js'
 
 import { sendMessage } from '#utils'
-import { logger } from '#settings'
+import { logger, parseEnvList } from '#settings'
 import {
   DollarExchangeRateResponse,
   getDollarExchangeRate,
@@ -90,9 +90,9 @@ export async function initializeCurrencyChannelsScheduler(client: Client) {
 
 async function scheduleCurrencyMessage(client: Client, type: CurrencyType): Promise<void> {
   const config = currencyConfigs[type]
-  const channelIds = process.env[config.envVar]?.split(',')
+  const channelIds = parseEnvList(process.env[config.envVar])
 
-  if (!channelIds?.length) {
+  if (!channelIds.length) {
     logger.warn(`No channels found for ${type}`)
     return
   }

@@ -1,5 +1,6 @@
 import { createCommand } from '#base'
 import { TelegramService, TelegramError, TelegramAuthError } from '#services'
+import { parseEnvList } from '#settings'
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
@@ -24,7 +25,7 @@ createCommand({
 
     try {
       const channelName = interaction.options.getString('canal')
-      const telegramChannels = process.env.TELEGRAM_PROMOTIONS_CHANNELS?.split(',') || []
+      const telegramChannels = parseEnvList(process.env.TELEGRAM_PROMOTIONS_CHANNELS)
 
       if (!telegramChannels.length) {
         await interaction.editReply({

@@ -7,6 +7,7 @@ import ck from 'chalk'
 import './global.js'
 import { logger } from './logger.js'
 export * from './error.js'
+export * from './env-utils.js'
 
 export { settings, logger }
 

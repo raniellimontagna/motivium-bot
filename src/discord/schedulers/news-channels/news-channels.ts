@@ -3,7 +3,7 @@ import cron from 'node-cron'
 import NodeCache from 'node-cache'
 import { Client } from 'discord.js'
 
-import { logger } from '#settings'
+import { logger, parseEnvList } from '#settings'
 import { sendMessage } from '#utils'
 import {
   getAINews,
@@ -41,9 +41,9 @@ export async function initializeNewsChannelsScheduler(client: Client) {
   ]
 
   categories.forEach(({ env, fetchNews, name }) => {
-    const channelIds = process.env[env]?.split(',')
+    const channelIds = parseEnvList(process.env[env])
 
-    if (!channelIds?.length) {
+    if (!channelIds.length) {
       logger.warn(`No ${name} channels configured`)
       return
     }
