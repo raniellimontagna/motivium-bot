@@ -555,17 +555,35 @@ export const SMART_KEYWORDS: Record<PromotionCategory, SmartKeywordConfig> = {
   },
 }
 
-export const DEFAULT_PROMOTION_CONFIG: Omit<
-  PromotionConfig,
-  'category' | 'discordChannelIds' | 'telegramChannels' | 'keywords'
-> = {
-  schedulePattern: '*/1 * * * *',
-  maxPromotionsPerExecution: 1,
-  maxAgeMinutes: 10,
+// ── Centralized Category Metadata ────────────────────────────
+// Single source of truth for emojis, display names, and env var keys.
+// Used by promotions.service.ts and command files to avoid repetition.
+export interface CategoryMeta {
+  emoji: string
+  name: string
+  discordEnv: string
+  telegramEnv: string
 }
 
-// Configuration for the GENERAL category
-export const GENERAL_PROMOTION_CONFIG: Omit<
+export const CATEGORY_METADATA: Record<PromotionCategory, CategoryMeta> = {
+  [PromotionCategory.GENERAL]: { emoji: '🎯', name: 'Geral', discordEnv: 'PROMOTIONS_CHANNELS_IDS', telegramEnv: 'TELEGRAM_PROMOTIONS_CHANNELS' },
+  [PromotionCategory.TECH]: { emoji: '💻', name: 'Tech', discordEnv: 'TECH_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'TECH_TELEGRAM_CHANNELS' },
+  [PromotionCategory.GAMING]: { emoji: '🎮', name: 'Gaming', discordEnv: 'GAMING_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'GAMING_TELEGRAM_CHANNELS' },
+  [PromotionCategory.FITNESS]: { emoji: '🏋️', name: 'Fitness', discordEnv: 'FITNESS_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'FITNESS_TELEGRAM_CHANNELS' },
+  [PromotionCategory.AUTOMOTIVE]: { emoji: '🚗', name: 'Automotivo', discordEnv: 'AUTOMOTIVE_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'AUTOMOTIVE_TELEGRAM_CHANNELS' },
+  [PromotionCategory.FASHION]: { emoji: '👗', name: 'Moda', discordEnv: 'FASHION_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'FASHION_TELEGRAM_CHANNELS' },
+  [PromotionCategory.HOME]: { emoji: '🏠', name: 'Casa', discordEnv: 'HOME_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'HOME_TELEGRAM_CHANNELS' },
+  [PromotionCategory.BUGS]: { emoji: '🐛', name: 'Bugs', discordEnv: 'BUGS_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'BUGS_TELEGRAM_CHANNELS' },
+  [PromotionCategory.ALIEXPRESS]: { emoji: '🛒', name: 'AliExpress', discordEnv: 'ALIEXPRESS_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'ALIEXPRESS_TELEGRAM_CHANNELS' },
+  [PromotionCategory.CUPONS]: { emoji: '🎫', name: 'Cupons', discordEnv: 'CUPONS_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'CUPONS_TELEGRAM_CHANNELS' },
+  [PromotionCategory.BEAUTY]: { emoji: '💄', name: 'Beleza', discordEnv: 'BEAUTY_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'BEAUTY_TELEGRAM_CHANNELS' },
+  [PromotionCategory.FOOD]: { emoji: '🍕', name: 'Food', discordEnv: 'FOOD_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'FOOD_TELEGRAM_CHANNELS' },
+  [PromotionCategory.HARDWARE]: { emoji: '🖥️', name: 'Hardware', discordEnv: 'HARDWARE_PROMOTIONS_CHANNELS_IDS', telegramEnv: 'HARDWARE_TELEGRAM_CHANNELS' },
+}
+
+// ── Promotion Config ─────────────────────────────────────────
+
+export const DEFAULT_PROMOTION_CONFIG: Omit<
   PromotionConfig,
   'category' | 'discordChannelIds' | 'telegramChannels' | 'keywords'
 > = {
@@ -574,77 +592,31 @@ export const GENERAL_PROMOTION_CONFIG: Omit<
   maxAgeMinutes: 5,
 }
 
-// Configurations per category
+// Only categories that differ from the default maxAgeMinutes (5 min)
+const CATEGORY_MAX_AGE_OVERRIDES: Partial<Record<PromotionCategory, number>> = {
+  [PromotionCategory.AUTOMOTIVE]: 60,
+  [PromotionCategory.HOME]: 60,
+  [PromotionCategory.ALIEXPRESS]: 15,
+  [PromotionCategory.CUPONS]: 15,
+  [PromotionCategory.BEAUTY]: 30,
+  [PromotionCategory.FOOD]: 10,
+  [PromotionCategory.HARDWARE]: 30,
+}
+
+// Build full per-category config by merging defaults with overrides
 export const CATEGORY_SPECIFIC_CONFIG: Record<
   PromotionCategory,
-  Partial<Pick<PromotionConfig, 'schedulePattern' | 'maxPromotionsPerExecution' | 'maxAgeMinutes'>>
-> = {
-  [PromotionCategory.GENERAL]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 5,
+  Pick<PromotionConfig, 'schedulePattern' | 'maxPromotionsPerExecution' | 'maxAgeMinutes'>
+> = Object.values(PromotionCategory).reduce(
+  (acc, category) => {
+    acc[category] = {
+      ...DEFAULT_PROMOTION_CONFIG,
+      maxAgeMinutes: CATEGORY_MAX_AGE_OVERRIDES[category] ?? DEFAULT_PROMOTION_CONFIG.maxAgeMinutes!,
+    }
+    return acc
   },
-  [PromotionCategory.TECH]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 5,
-  },
-  [PromotionCategory.GAMING]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 5,
-  },
-  [PromotionCategory.FITNESS]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 5,
-  },
-  [PromotionCategory.AUTOMOTIVE]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 60,
-  },
-  [PromotionCategory.FASHION]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 5,
-  },
-  [PromotionCategory.HOME]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 60,
-  },
-  [PromotionCategory.BUGS]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 5,
-  },
-  [PromotionCategory.ALIEXPRESS]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 15,
-  },
-  [PromotionCategory.CUPONS]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 15,
-  },
-  [PromotionCategory.BEAUTY]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 30,
-  },
-  [PromotionCategory.FOOD]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 10,
-  },
-  [PromotionCategory.HARDWARE]: {
-    schedulePattern: '*/1 * * * *',
-    maxPromotionsPerExecution: 1,
-    maxAgeMinutes: 30,
-  },
-}
+  {} as Record<PromotionCategory, Pick<PromotionConfig, 'schedulePattern' | 'maxPromotionsPerExecution' | 'maxAgeMinutes'>>,
+)
 
 // Função para extrair todas as palavras-chave para compatibilidade
 export const PROMOTION_KEYWORDS: Record<PromotionCategory, readonly string[]> = Object.entries(

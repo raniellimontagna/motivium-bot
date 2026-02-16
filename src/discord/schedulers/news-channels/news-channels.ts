@@ -17,14 +17,13 @@ import {
 import { NewsCategory, ScheduleNewsChannels, ScheduleNewsMessage } from './news-channels.types.js'
 
 // Set cache expiration time to 24 hours, with a check period of 1 hour
-const newsCaches = {
-  AI: new NodeCache({ stdTTL: 86400, checkperiod: 3600 }),
-  Tech: new NodeCache({ stdTTL: 86400, checkperiod: 3600 }),
-  Agro: new NodeCache({ stdTTL: 86400, checkperiod: 3600 }),
-  Space: new NodeCache({ stdTTL: 86400, checkperiod: 3600 }),
-  Economy: new NodeCache({ stdTTL: 86400, checkperiod: 3600 }),
-  Brazil: new NodeCache({ stdTTL: 86400, checkperiod: 3600 }),
-}
+const newsCaches: Record<NewsCategory, NodeCache> = Object.values(NewsCategory).reduce(
+  (acc, category) => {
+    acc[category] = new NodeCache({ stdTTL: 86400, checkperiod: 3600 })
+    return acc
+  },
+  {} as Record<NewsCategory, NodeCache>,
+)
 
 /**
  * Initializes the scheduler for news channels.

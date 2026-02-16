@@ -29,7 +29,7 @@
       "#database": ["./database/index.ts"],
       "#base": ["./discord/base/index.ts"],
       "#schedulers": ["./discord/schedulers/index.ts"],
-      "#utils": ["./dircord/utils/index.ts"],
+      "#utils": ["./discord/utils/index.ts"],
       "#libs": ["./libs/index.ts"],
       "#services": ["./services/index.ts"],
       "#functions": ["./functions/index.ts"],

@@ -1,5 +1,6 @@
 import { axiosInstance } from '#libs'
 import NodeCache from 'node-cache'
+import { logger } from '#settings'
 
 export const AWESOME_API_URL = 'https://economia.awesomeapi.com.br'
 
@@ -43,7 +44,7 @@ export async function getAvailableCotations(): Promise<AvailableCotations> {
 
     throw new Error('Failed to fetch available cotations')
   } catch (error) {
-    console.error('Error fetching available cotations:', error)
+    logger.error('Error fetching available cotations:', error)
     throw error
   }
 }
@@ -68,7 +69,7 @@ export async function getExchangeRate(from: string, to: string): Promise<Exchang
 
     throw new Error('Failed to fetch exchange rate')
   } catch (error) {
-    console.error('Error fetching exchange rate:', error)
+    logger.error('Error fetching exchange rate:', error)
     throw error
   }
 }

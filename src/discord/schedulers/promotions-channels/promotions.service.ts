@@ -11,6 +11,7 @@ import {
   SMART_KEYWORDS,
   DEFAULT_PROMOTION_CONFIG,
   CATEGORY_SPECIFIC_CONFIG,
+  CATEGORY_METADATA,
   type PromotionConfig,
 } from './promotions.types.js'
 import type { TelegramMessage } from '../../../services/telegram/telegramService.types.js'
@@ -79,83 +80,12 @@ export class PromotionsService {
    * Load configurations for the promotion categories from environment variables
    */
   private loadPromotionConfigurations(): void {
-    const categoryEnvMap: Array<{
-      category: PromotionCategory
-      discordEnv: string
-      telegramEnv: string
-    }> = [
-      {
-        category: PromotionCategory.GENERAL,
-        discordEnv: 'PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'TELEGRAM_PROMOTIONS_CHANNELS',
-      },
-      {
-        category: PromotionCategory.TECH,
-        discordEnv: 'TECH_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'TECH_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.GAMING,
-        discordEnv: 'GAMING_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'GAMING_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.FITNESS,
-        discordEnv: 'FITNESS_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'FITNESS_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.AUTOMOTIVE,
-        discordEnv: 'AUTOMOTIVE_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'AUTOMOTIVE_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.FASHION,
-        discordEnv: 'FASHION_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'FASHION_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.HOME,
-        discordEnv: 'HOME_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'HOME_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.BUGS,
-        discordEnv: 'BUGS_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'BUGS_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.ALIEXPRESS,
-        discordEnv: 'ALIEXPRESS_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'ALIEXPRESS_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.CUPONS,
-        discordEnv: 'CUPONS_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'CUPONS_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.BEAUTY,
-        discordEnv: 'BEAUTY_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'BEAUTY_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.FOOD,
-        discordEnv: 'FOOD_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'FOOD_TELEGRAM_CHANNELS',
-      },
-      {
-        category: PromotionCategory.HARDWARE,
-        discordEnv: 'HARDWARE_PROMOTIONS_CHANNELS_IDS',
-        telegramEnv: 'HARDWARE_TELEGRAM_CHANNELS',
-      },
-    ]
-
-    for (const { category, discordEnv, telegramEnv } of categoryEnvMap) {
+    for (const category of Object.values(PromotionCategory)) {
+      const meta = CATEGORY_METADATA[category]
       this.addPromotionConfig({
         category,
-        discordChannelIds: parseEnvList(process.env[discordEnv]),
-        telegramChannels: parseEnvList(process.env[telegramEnv]),
+        discordChannelIds: parseEnvList(process.env[meta.discordEnv]),
+        telegramChannels: parseEnvList(process.env[meta.telegramEnv]),
       })
     }
   }
@@ -288,40 +218,7 @@ export class PromotionsService {
     category: PromotionCategory,
   ): Promise<void> {
     try {
-      const categoryEmojis = {
-        [PromotionCategory.GENERAL]: '🎯',
-        [PromotionCategory.TECH]: '💻',
-        [PromotionCategory.GAMING]: '🎮',
-        [PromotionCategory.FITNESS]: '🏋️',
-        [PromotionCategory.AUTOMOTIVE]: '🚗',
-        [PromotionCategory.FASHION]: '👗',
-        [PromotionCategory.HOME]: '🏠',
-        [PromotionCategory.BUGS]: '🐛',
-        [PromotionCategory.ALIEXPRESS]: '🛒',
-        [PromotionCategory.CUPONS]: '🎫',
-        [PromotionCategory.BEAUTY]: '💄',
-        [PromotionCategory.FOOD]: '🍕',
-        [PromotionCategory.HARDWARE]: '🖥️',
-      }
-
-      const categoryNames = {
-        [PromotionCategory.GENERAL]: 'Geral',
-        [PromotionCategory.TECH]: 'Tech',
-        [PromotionCategory.GAMING]: 'Gaming',
-        [PromotionCategory.FITNESS]: 'Fitness',
-        [PromotionCategory.AUTOMOTIVE]: 'Automotivo',
-        [PromotionCategory.FASHION]: 'Moda',
-        [PromotionCategory.HOME]: 'Casa',
-        [PromotionCategory.BUGS]: 'Bugs',
-        [PromotionCategory.ALIEXPRESS]: 'AliExpress',
-        [PromotionCategory.CUPONS]: 'Cupons',
-        [PromotionCategory.BEAUTY]: 'Beleza',
-        [PromotionCategory.FOOD]: 'Food',
-        [PromotionCategory.HARDWARE]: 'Hardware',
-      }
-
-      const emoji = categoryEmojis[category]
-      const categoryName = categoryNames[category]
+      const { emoji, name: categoryName } = CATEGORY_METADATA[category]
 
       // Prepare message content
       const cleanMessage = promotion.message ? promotion.message.substring(0, 1800) : ''
@@ -476,24 +373,4 @@ export class PromotionsService {
 
     return stats
   }
-}
-
-// Singleton instance
-let promotionsServiceInstance: PromotionsService | null = null
-
-/**
- * Initialize promotions system
- */
-export function initializePromotions(client: Client): void {
-  if (!promotionsServiceInstance) {
-    promotionsServiceInstance = new PromotionsService(client)
-    logger.log('✅ Promotions service initialized')
-  }
-}
-
-/**
- * Get promotions service instance
- */
-export function getPromotionsService(): PromotionsService | null {
-  return promotionsServiceInstance
 }

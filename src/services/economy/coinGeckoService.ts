@@ -1,4 +1,5 @@
 import { axiosInstance } from '#libs'
+import { logger } from '#settings'
 
 export interface CoinGeckoCoin {
   usd: number
@@ -37,7 +38,7 @@ export const getCoinData = async (coinId: Coins): Promise<CoinGeckoCoin> => {
 
     throw new Error(`Failed to fetch coin data for ${coinId}`)
   } catch (error) {
-    console.error('Error fetching coin data:', error)
+    logger.error('Error fetching coin data:', error)
     throw error
   }
 }

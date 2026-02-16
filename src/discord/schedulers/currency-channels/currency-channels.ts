@@ -8,7 +8,7 @@ import timezone from 'dayjs/plugin/timezone.js'
 import { sendMessage } from '#utils'
 import { logger, parseEnvList } from '#settings'
 import {
-  DollarExchangeRateResponse,
+  ExchangeRateResponse,
   getDollarExchangeRate,
   CoinGeckoCoin,
   getCoinData,
@@ -115,7 +115,7 @@ async function scheduleCurrencyMessage(client: Client, type: CurrencyType): Prom
 
 function formatCurrencyMessage(
   type: CurrencyType,
-  data: DollarExchangeRateResponse | CoinGeckoCoin,
+  data: ExchangeRateResponse | CoinGeckoCoin,
   config: CurrencyConfig,
 ): string {
   const now = dayjs().tz('America/Sao_Paulo').format('dddd, [dia] D [de] MMMM [de] YYYY [às] HH:mm')
@@ -123,14 +123,14 @@ function formatCurrencyMessage(
 
   const value =
     type === 'dollar'
-      ? `O valor do dólar no momento é: **R$ ${parseFloat((data as DollarExchangeRateResponse).bid)
+      ? `O valor do dólar no momento é: **R$ ${parseFloat((data as ExchangeRateResponse).bid)
           .toFixed(2)
           .replace('.', ',')}**`
       : `Preço em dólares: **$${(data as CoinGeckoCoin).usd.toFixed(2)}**`
 
   const dayVariation =
     type === 'dollar'
-      ? parseFloat((data as DollarExchangeRateResponse).pctChange)
+      ? parseFloat((data as ExchangeRateResponse).pctChange)
       : (data as CoinGeckoCoin).usd_24h_change
 
   const variation =

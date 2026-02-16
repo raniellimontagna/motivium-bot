@@ -5,46 +5,53 @@ import { Message } from '@prisma/client'
 import { getGeminiResponse } from './gemini.js'
 import { getChatGPTResponse } from './openai.js'
 
-async function tryGetChatGPTResponse(message: string, history: Message[]) {
+type AIResult =
+  | { success: true; response: string }
+  | { success: false; error: any; isQuotaError?: boolean }
+
+async function tryGetAIResponse(
+  fetcher: () => Promise<string | null>,
+  serviceName: string,
+): Promise<AIResult> {
   try {
-    const response = await getChatGPTResponse(message, history)
+    const response = await fetcher()
     if (response) {
       return { success: true, response } as const
     }
-    return { success: false, error: new Error('No response from ChatGPT') } as const
+    return { success: false, error: new Error(`No response from ${serviceName}`) } as const
   } catch (error: any) {
-    const isQuotaError = error?.error?.type === 'insufficient_quota' || error?.status === 429
+    const isQuotaError =
+      serviceName === 'ChatGPT' && (error?.error?.type === 'insufficient_quota' || error?.status === 429)
     return { success: false, error, isQuotaError } as const
   }
 }
 
-async function tryGetGeminiResponse(message: string, history: Message[]) {
-  try {
-    if (!process.env.GEMINI_API_KEY) {
-      return { success: false, error: new Error('GEMINI_API_KEY not configured') } as const
-    }
-
-    const response = await getGeminiResponse(message, history)
-    if (response) {
-      return { success: true, response } as const
-    }
-    return { success: false, error: new Error('No response from Gemini') } as const
-  } catch (error) {
-    return { success: false, error } as const
-  }
-}
-
 export async function getAIResponse(message: string, history: Message[]) {
-  const chatGPTResult = await tryGetChatGPTResponse(message, history)
+  // Try ChatGPT first
+  const chatGPTResult = await tryGetAIResponse(
+    () => getChatGPTResponse(message, history),
+    'ChatGPT',
+  )
 
   if (chatGPTResult.success) {
     return { success: true, response: chatGPTResult.response } as const
   }
 
   logger.error('Error getting ChatGPT response:', chatGPTResult.error)
+
+  // Fallback to Gemini if ChatGPT fails (e.g. quota or other errors)
+  if (!process.env.GEMINI_API_KEY) {
+    logger.warn('Gemini API key not configured, skipping fallback')
+    return {
+      success: false,
+      error: chatGPTResult.error,
+      message: 'Desculpe, o serviço de IA está temporariamente indisponível 😔',
+    } as const
+  }
+
   logger.warn('ChatGPT failed, trying Gemini API')
 
-  const geminiResult = await tryGetGeminiResponse(message, history)
+  const geminiResult = await tryGetAIResponse(() => getGeminiResponse(message, history), 'Gemini')
 
   if (geminiResult.success) {
     return { success: true, response: geminiResult.response } as const

@@ -11,6 +11,8 @@ const envSchema = z.object({
   COIN_GECKO_API_KEY: z.string().optional(),
   CURRENCY_BTC_CHANNEL_IDS: z.string().optional(),
   CURRENCY_DOLLAR_EXCHANGE_CHANNEL_IDS: z.string().optional(),
+  CURRENCY_ETH_CHANNEL_IDS: z.string().optional(),
+  CURRENCY_SOL_CHANNEL_IDS: z.string().optional(),
 
   // AI envs
   GEMINI_API_KEY: z.string().optional(),
@@ -24,6 +26,7 @@ const envSchema = z.object({
   SPACE_NEWS_CHANNELS_IDS: z.string().optional(),
   BRAZIL_NEWS_CHANNELS_IDS: z.string().optional(),
   ECONOMY_NEWS_CHANNELS_IDS: z.string().optional(),
+  AGRO_NEWS_CHANNELS_IDS: z.string().optional(),
 
   // Weather
   WEATHER_API_KEY: z.string().optional(),

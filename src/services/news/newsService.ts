@@ -18,6 +18,8 @@ interface RSSFeed {
 
 const parser = new Parser()
 
+import { logger } from '#settings'
+
 async function getRSSNews(feed: RSSFeed): Promise<NewsArticle[]> {
   try {
     const articles: NewsArticle[] = []
@@ -41,7 +43,7 @@ async function getRSSNews(feed: RSSFeed): Promise<NewsArticle[]> {
     // Return only articles published today to avoid old news
     return todayArticles
   } catch (error) {
-    console.error(`Error fetching RSS news from ${feed.name}:`, error)
+    logger.error(`Error fetching RSS news from ${feed.name}:`, error)
     return []
   }
 }
@@ -53,65 +55,41 @@ const conexaoPoliticaUrlBase = 'https://conexaopolitica.com.br/feed'
 const embrapaAgroUrlBase =
   'https://www.embrapa.br/en/noticias-rss/-/asset_publisher/HA73uEmvroGS/rss'
 
-async function getTechNews(): Promise<NewsArticle[]> {
-  const techFeeds = [{ url: `${theVergeURLBase}/tech/index.xml`, name: 'The Verge - Tech' }]
-  const techNews = await Promise.all(techFeeds.map((feed) => getRSSNews(feed)))
-
-  return techNews.flat()
+/**
+ * Factory function to create news fetcher functions
+ */
+function createNewsFetcher(feeds: RSSFeed[]) {
+  return async () => {
+    const news = await Promise.all(feeds.map((feed) => getRSSNews(feed)))
+    return news.flat()
+  }
 }
 
-async function getAINews(): Promise<NewsArticle[]> {
-  const aiFeeds = [
-    { url: `${theVergeURLBase}/ai-artificial-intelligence/index.xml`, name: 'The Verge - AI' },
-  ]
-  const aiNews = await Promise.all(aiFeeds.map((feed) => getRSSNews(feed)))
+export const getTechNews = createNewsFetcher([
+  { url: `${theVergeURLBase}/tech/index.xml`, name: 'The Verge - Tech' },
+])
 
-  return aiNews.flat()
-}
+export const getAINews = createNewsFetcher([
+  { url: `${theVergeURLBase}/ai-artificial-intelligence/index.xml`, name: 'The Verge - AI' },
+])
 
-async function getSpaceNews(): Promise<NewsArticle[]> {
-  const spaceFeeds = [{ url: `${theVergeURLBase}/space/index.xml`, name: 'The Verge - Space' }]
-  const spaceNews = await Promise.all(spaceFeeds.map((feed) => getRSSNews(feed)))
+export const getSpaceNews = createNewsFetcher([
+  { url: `${theVergeURLBase}/space/index.xml`, name: 'The Verge - Space' },
+])
 
-  return spaceNews.flat()
-}
+export const getEconomyNews = createNewsFetcher([
+  { url: `${investingURLBase}/news_301.rss`, name: 'Investing.com - Cryptocurrency' },
+  { url: `${investingURLBase}/news_14.rss`, name: 'Investing.com - Economy' },
+  { url: `${investingURLBase}/news_1.rss`, name: 'Investing.com - Currency Exchange' },
+  { url: `${gazetaDoPovoUrlBase}/economia.xml`, name: 'Gazeta do Povo - Economia' },
+])
 
-async function getEconomyNews(): Promise<NewsArticle[]> {
-  const economyFeeds = [
-    { url: `${investingURLBase}/news_301.rss`, name: 'Investing.com - Cryptocurrency' },
-    { url: `${investingURLBase}/news_14.rss`, name: 'Investing.com - Economy' },
-    { url: `${investingURLBase}/news_1.rss`, name: 'Investing.com - Currency Exchange' },
-    { url: `${gazetaDoPovoUrlBase}/economia.xml`, name: 'Gazeta do Povo - Economia' },
-  ]
-  const economyNews = await Promise.all(economyFeeds.map((feed) => getRSSNews(feed)))
+export const getBrazilNews = createNewsFetcher([
+  { url: `${conexaoPoliticaUrlBase}`, name: 'Conexão Política - Política' },
+  { url: `${gazetaDoPovoUrlBase}/republica.xml`, name: 'Gazeta do Povo - República' },
+  { url: `${gazetaDoPovoUrlBase}/opiniao.xml`, name: 'Gazeta do Povo - Opinião' },
+])
 
-  return economyNews.flat()
-}
+export const getAgroNews = createNewsFetcher([{ url: `${embrapaAgroUrlBase}`, name: 'Embrapa - Agro' }])
 
-async function getBrazilNews(): Promise<NewsArticle[]> {
-  const articles = [
-    { url: `${conexaoPoliticaUrlBase}`, name: 'Conexão Política - Política' },
-    { url: `${gazetaDoPovoUrlBase}/republica.xml`, name: 'Gazeta do Povo - República' },
-    { url: `${gazetaDoPovoUrlBase}/opiniao.xml`, name: 'Gazeta do Povo - Opinião' },
-  ]
-  const brazilNews = await Promise.all(articles.map((feed) => getRSSNews(feed)))
-
-  return brazilNews.flat()
-}
-
-async function getAgroNews(): Promise<NewsArticle[]> {
-  const agroFeeds = [{ url: `${embrapaAgroUrlBase}`, name: 'Embrapa - Agro' }]
-  const agroNews = await Promise.all(agroFeeds.map((feed) => getRSSNews(feed)))
-
-  return agroNews.flat()
-}
-
-export {
-  getRSSNews,
-  getTechNews,
-  getAINews,
-  getSpaceNews,
-  getEconomyNews,
-  getBrazilNews,
-  getAgroNews,
-}
+export { getRSSNews }

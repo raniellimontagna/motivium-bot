@@ -1,4 +1,5 @@
 import { axiosInstance } from '#libs'
+import { logger } from '#settings'
 
 export interface CepResponse {
   cep: string
@@ -28,7 +29,7 @@ export async function getCep(cep: string): Promise<CepResponse> {
 
     throw new Error('CEP not found in ViaCEP or invalid')
   } catch (error) {
-    console.error('Error fetching CEP:', error)
+    logger.error('Error fetching CEP:', error)
     throw error
   }
 }

@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder } from 'discord.js'
 import { createCommand } from '#base'
-import { PromotionCategory, CATEGORY_SPECIFIC_CONFIG, getPromotionsService } from '#schedulers'
+import { PromotionCategory, CATEGORY_SPECIFIC_CONFIG, CATEGORY_METADATA, getPromotionsService } from '#schedulers'
+import { logger } from '#settings'
 
 createCommand({
   name: 'promocoes',
@@ -57,21 +58,6 @@ createCommand({
       switch (action) {
         case 'status': {
           const stats = promotionsService.getQueueStats()
-          const categoryEmojis = {
-            [PromotionCategory.GENERAL]: '🎯',
-            [PromotionCategory.TECH]: '💻',
-            [PromotionCategory.GAMING]: '🎮',
-            [PromotionCategory.FITNESS]: '🏋️',
-            [PromotionCategory.AUTOMOTIVE]: '🚗',
-            [PromotionCategory.FASHION]: '👗',
-            [PromotionCategory.HOME]: '🏠',
-            [PromotionCategory.BUGS]: '🐛',
-            [PromotionCategory.ALIEXPRESS]: '🛒',
-            [PromotionCategory.CUPONS]: '🎫',
-            [PromotionCategory.BEAUTY]: '💄',
-            [PromotionCategory.FOOD]: '🍕',
-            [PromotionCategory.HARDWARE]: '🖥️',
-          }
 
           const embed = new EmbedBuilder()
             .setTitle('📊 Status das Filas de Promoções')
@@ -81,9 +67,9 @@ createCommand({
 
           let description = ''
           for (const [category, count] of Object.entries(stats)) {
-            const emoji = categoryEmojis[category as PromotionCategory]
+            const meta = CATEGORY_METADATA[category as PromotionCategory]
             const categoryName = category.charAt(0) + category.slice(1).toLowerCase()
-            description += `${emoji} **${categoryName}**: ${count} promoções\n`
+            description += `${meta.emoji} **${categoryName}**: ${count} promoções\n`
           }
 
           embed.setDescription(description || 'Nenhuma promoção na fila.')
@@ -115,22 +101,6 @@ createCommand({
         }
 
         case 'timeconfig': {
-          const categoryEmojis = {
-            [PromotionCategory.GENERAL]: '🎯',
-            [PromotionCategory.TECH]: '💻',
-            [PromotionCategory.GAMING]: '🎮',
-            [PromotionCategory.FITNESS]: '🏋️',
-            [PromotionCategory.AUTOMOTIVE]: '🚗',
-            [PromotionCategory.FASHION]: '👗',
-            [PromotionCategory.HOME]: '🏠',
-            [PromotionCategory.BUGS]: '🐛',
-            [PromotionCategory.ALIEXPRESS]: '🛒',
-            [PromotionCategory.CUPONS]: '🎫',
-            [PromotionCategory.BEAUTY]: '💄',
-            [PromotionCategory.FOOD]: '🍕',
-            [PromotionCategory.HARDWARE]: '🖥️',
-          }
-
           const embed = new EmbedBuilder()
             .setTitle('⏰ Configurações de Tempo por Categoria')
             .setColor(0x007acc)
@@ -140,11 +110,11 @@ createCommand({
           const fields = []
 
           for (const [category, config] of Object.entries(CATEGORY_SPECIFIC_CONFIG)) {
-            const emoji = categoryEmojis[category as PromotionCategory]
+            const meta = CATEGORY_METADATA[category as PromotionCategory]
             const categoryName = category.charAt(0) + category.slice(1).toLowerCase()
 
             fields.push({
-              name: `${emoji} ${categoryName}`,
+              name: `${meta.emoji} ${categoryName}`,
               value: `⏱️ **Frequência**: ${config?.schedulePattern || 'Não definido'}\n⌛ **Limite**: ${config?.maxAgeMinutes || 'Não definido'} minutos`,
               inline: true,
             })
@@ -201,7 +171,7 @@ createCommand({
 
             await interaction.editReply({ embeds: [successEmbed] })
           } catch (error) {
-            console.error('Reset authentication error:', error)
+            logger.error('Reset authentication error:', error)
 
             const errorEmbed = new EmbedBuilder()
               .setTitle('❌ Erro no Reset')

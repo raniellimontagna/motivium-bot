@@ -1,21 +1,8 @@
 import { axiosInstance } from '#libs'
-import { AWESOME_API_EXCHANGE_RATE_URL } from './awesomeApiService.js'
+import { AWESOME_API_EXCHANGE_RATE_URL, type ExchangeRateResponse } from './awesomeApiService.js'
+import { logger } from '#settings'
 
-export interface DollarExchangeRateResponse {
-  code: string
-  codein: string
-  name: string
-  high: string
-  low: string
-  varBid: string
-  pctChange: string
-  bid: string
-  ask: string
-  timestamp: string
-  create_date: string
-}
-
-export async function getDollarExchangeRate(): Promise<DollarExchangeRateResponse> {
+export async function getDollarExchangeRate(): Promise<ExchangeRateResponse> {
   try {
     const response = await axiosInstance.get(`${AWESOME_API_EXCHANGE_RATE_URL}/USD-BRL`)
 
@@ -25,7 +12,7 @@ export async function getDollarExchangeRate(): Promise<DollarExchangeRateRespons
 
     throw new Error('Failed to fetch dollar exchange rate')
   } catch (error) {
-    console.error('Error fetching dollar exchange rate:', error)
+    logger.error('Error fetching dollar exchange rate:', error)
     throw error
   }
 }

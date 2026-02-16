@@ -1,4 +1,5 @@
-import axios from 'axios'
+import { axiosInstance } from '#libs'
+import { logger } from '#settings'
 import type { CurrentWeather, Forecast } from './weatherService.types.js'
 
 export const weatherApiUrl = 'http://api.weatherapi.com/v1'
@@ -7,7 +8,7 @@ export const forecastWeather = weatherApiUrl + '/forecast.json'
 
 export const getCurrentWeather = async (location: string): Promise<CurrentWeather> => {
   try {
-    const response = await axios.get(currentWeather, {
+    const response = await axiosInstance.get(currentWeather, {
       params: {
         key: process.env.WEATHER_API_KEY,
         q: location,
@@ -16,15 +17,14 @@ export const getCurrentWeather = async (location: string): Promise<CurrentWeathe
     })
     return response.data.current
   } catch (error) {
-    throw new Error(
-      `Failed to fetch current weather: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    )
+    logger.error('Error fetching current weather:', error)
+    throw error
   }
 }
 
 export const getForecast = async (location: string, days: number = 3): Promise<Forecast> => {
   try {
-    const response = await axios.get(forecastWeather, {
+    const response = await axiosInstance.get(forecastWeather, {
       params: {
         key: process.env.WEATHER_API_KEY,
         q: location,
@@ -35,8 +35,7 @@ export const getForecast = async (location: string, days: number = 3): Promise<F
     })
     return response.data.forecast
   } catch (error) {
-    throw new Error(
-      `Failed to fetch weather forecast: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    )
+    logger.error('Error fetching weather forecast:', error)
+    throw error
   }
 }
