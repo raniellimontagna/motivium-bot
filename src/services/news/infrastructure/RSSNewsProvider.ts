@@ -30,11 +30,11 @@ export class RSSNewsProvider implements NewsProvider {
 
       for (const item of feedContent.items) {
         articles.push({
-          title: item.title || '',
-          contentSnippet: item.contentSnippet || '',
-          content: item.content || '',
-          summary: item.summary || '',
-          url: item.link || '',
+          title: item.title?.trim() || '',
+          contentSnippet: item.contentSnippet?.trim() || '',
+          content: item.content?.trim() || '',
+          summary: item.summary?.trim() || '',
+          url: item.link?.trim() || '',
           publishedAt: item.pubDate ? dayjs(item.pubDate) : dayjs(),
           source: { name: feed.name },
         })

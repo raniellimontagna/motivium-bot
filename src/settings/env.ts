@@ -27,6 +27,7 @@ const envSchema = z.object({
   BRAZIL_NEWS_CHANNELS_IDS: z.string().optional(),
   ECONOMY_NEWS_CHANNELS_IDS: z.string().optional(),
   AGRO_NEWS_CHANNELS_IDS: z.string().optional(),
+  GOSSIP_NEWS_CHANNELS_IDS: z.string().optional(),
 
   // Weather
   WEATHER_API_KEY: z.string().optional(),

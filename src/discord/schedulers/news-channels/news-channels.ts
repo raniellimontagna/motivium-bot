@@ -1,3 +1,4 @@
+import { Client } from 'discord.js'
 import he from 'he'
 import NodeCache from 'node-cache'
 
@@ -10,6 +11,7 @@ import {
   getTechNews,
   getBrazilNews,
   getAgroNews,
+  getGossipNews,
 } from '#services'
 
 import { NewsCategory, ScheduleNewsMessage } from './news-channels.types.js'
@@ -25,28 +27,33 @@ const newsCaches: Record<NewsCategory, NodeCache> = Object.values(NewsCategory).
   {} as Record<NewsCategory, NodeCache>,
 )
 
+export async function triggerNewsChannels(client: Client) {
+  const categories = [
+    { env: 'AI_NEWS_CHANNELS_IDS', fetchNews: getAINews, name: NewsCategory.AI },
+    { env: 'AGRO_NEWS_CHANNELS_IDS', fetchNews: getAgroNews, name: NewsCategory.Agro },
+    { env: 'TECH_NEWS_CHANNELS_IDS', fetchNews: getTechNews, name: NewsCategory.Tech },
+    { env: 'SPACE_NEWS_CHANNELS_IDS', fetchNews: getSpaceNews, name: NewsCategory.Space },
+    { env: 'BRAZIL_NEWS_CHANNELS_IDS', fetchNews: getBrazilNews, name: NewsCategory.Brazil },
+    { env: 'ECONOMY_NEWS_CHANNELS_IDS', fetchNews: getEconomyNews, name: NewsCategory.Economy },
+    { env: 'GOSSIP_NEWS_CHANNELS_IDS', fetchNews: getGossipNews, name: NewsCategory.Gossip },
+  ]
+
+  for (const { env, fetchNews, name } of categories) {
+    const channelIds = parseEnvList(process.env[env])
+
+    if (!channelIds.length) continue
+
+    for (const channelId of channelIds) {
+      await scheduleNewsMessage({ client, category: name, channelId, getNewsFunction: fetchNews })
+    }
+  }
+}
+
 createScheduler({
   name: 'News channels',
   cron: '0,30 * * * *', // Every 30 minutes
   async run(client) {
-    const categories = [
-      { env: 'AI_NEWS_CHANNELS_IDS', fetchNews: getAINews, name: NewsCategory.AI },
-      { env: 'AGRO_NEWS_CHANNELS_IDS', fetchNews: getAgroNews, name: NewsCategory.Agro },
-      { env: 'TECH_NEWS_CHANNELS_IDS', fetchNews: getTechNews, name: NewsCategory.Tech },
-      { env: 'SPACE_NEWS_CHANNELS_IDS', fetchNews: getSpaceNews, name: NewsCategory.Space },
-      { env: 'BRAZIL_NEWS_CHANNELS_IDS', fetchNews: getBrazilNews, name: NewsCategory.Brazil },
-      { env: 'ECONOMY_NEWS_CHANNELS_IDS', fetchNews: getEconomyNews, name: NewsCategory.Economy },
-    ]
-
-    for (const { env, fetchNews, name } of categories) {
-      const channelIds = parseEnvList(process.env[env])
-
-      if (!channelIds.length) continue
-
-      for (const channelId of channelIds) {
-        await scheduleNewsMessage({ client, category: name, channelId, getNewsFunction: fetchNews })
-      }
-    }
+    await triggerNewsChannels(client)
   },
 })
 
