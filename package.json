@@ -62,44 +62,18 @@
     "vitest": "^3.2.4"
   },
   "imports": {
-    "#database": [
-      "./build/database/index.js"
-    ],
-    "#base": [
-      "./build/discord/base/index.js"
-    ],
-    "#discord": [
-      "./build/discord/index.js"
-    ],
-    "#schedulers": [
-      "./build/discord/schedulers/index.js"
-    ],
-    "#services": [
-      "./build/services/index.js"
-    ],
-    "#libs": [
-      "./build/libs/index.js"
-    ],
-    "#utils": [
-      "./build/discord/utils/index.js"
-    ],
-    "#functions": [
-      "./build/functions/index.js"
-    ],
-    "#menus": [
-      "./build/menus/index.js"
-    ],
-    "#settings": [
-      "./build/settings/index.js"
-    ],
-    "#tools": [
-      "./build/tools/index.js"
-    ],
-    "#server": [
-      "./build/server/index.js"
-    ],
-    "#lib": [
-      "./build/lib/index.js"
-    ]
+    "#database": "./src/database/index.ts",
+    "#base": "./src/discord/base/index.ts",
+    "#discord": "./src/discord/index.ts",
+    "#schedulers": "./src/discord/schedulers/index.ts",
+    "#services": "./src/services/index.ts",
+    "#libs": "./src/libs/index.ts",
+    "#utils": "./src/discord/utils/index.ts",
+    "#functions": "./src/functions/index.ts",
+    "#menus": "./src/menus/index.ts",
+    "#settings": "./src/settings/index.ts",
+    "#tools": "./src/tools/index.ts",
+    "#server": "./src/server/index.ts",
+    "#lib": "./src/lib/index.ts"
   }
 }

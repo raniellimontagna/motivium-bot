@@ -83,17 +83,33 @@ async function scheduleNewsMessage({
     const article = newArticles[0]
     newsCaches[category as NewsCategory].set(article.url, true)
 
-    const image = article.content.match(/<img[^>]+src="([^"]+)"/)?.[1].split('?')[0] ?? ''
+    let image = article.content.match(/<img[^>]+src="([^"]+)"/)?.[1].split('?')[0] ?? ''
+
+    if (!image && article.raw) {
+      const raw = article.raw
+      if (raw['media:thumbnail']?.$?.url) image = raw['media:thumbnail'].$.url
+      else if (raw.enclosure?.url) image = raw.enclosure.url
+      else if (raw.thumbnail) image = raw.thumbnail
+    }
 
     const sourceFormatted = `-# 🗞️ Fonte: [${article.source.name}](<${article.url}>)`
     const publishedAtDate = article.publishedAt.format('DD/MM/YYYY [às] HH:mm')
 
-    const rawSummary = article.summary
-    const cleanSummary = he.decode(rawSummary)
+    const rawSummary = article.summary || article.contentSnippet || ''
+    let cleanSummary = he.decode(rawSummary).replace(/<[^>]*>/g, '').trim()
+
+    if (!cleanSummary) {
+      logger.warn(`Skipping article "${article.title}" due to empty summary`)
+      return
+    }
+
+    if (cleanSummary.length > 4000) {
+      cleanSummary = cleanSummary.substring(0, 3997) + '...'
+    }
 
     const message = `${cleanSummary}\n\n${sourceFormatted} • ${publishedAtDate}`
 
-    sendMessage({
+    await sendMessage({
       client,
       channelId,
       imageUrl: image,

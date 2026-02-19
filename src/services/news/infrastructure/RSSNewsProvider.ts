@@ -1,3 +1,4 @@
+import axios from 'axios'
 import dayjs from 'dayjs'
 import Parser from 'rss-parser'
 import { logger } from '#settings'
@@ -25,8 +26,32 @@ export class RSSNewsProvider implements NewsProvider {
 
   private async getRSSNews(feed: RSSFeed): Promise<NewsArticle[]> {
     try {
+      const response = await axios.get(feed.url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept: 'application/rss+xml, application/xml, text/xml, */*',
+          'Accept-Encoding': 'gzip, deflate, br',
+        },
+      })
+
+      const rawContent = response.data
+      if (typeof rawContent !== 'string') {
+        throw new Error(`Expected string response from ${feed.name}, but got ${typeof rawContent}`)
+      }
+
+      // Clean content: remove everything before the first '<'
+      const startTagIndex = rawContent.indexOf('<')
+      const content = startTagIndex !== -1 ? rawContent.substring(startTagIndex).trim() : rawContent
+
       const articles: NewsArticle[] = []
-      const feedContent = await parser.parseURL(feed.url)
+      let feedContent
+      try {
+        feedContent = await parser.parseString(content)
+      } catch (parseError) {
+        logger.error(`Failed to parse XML from ${feed.name}. First 100 chars: ${content.substring(0, 100)}`)
+        throw parseError
+      }
 
       for (const item of feedContent.items) {
         articles.push({
@@ -37,6 +62,7 @@ export class RSSNewsProvider implements NewsProvider {
           url: item.link?.trim() || '',
           publishedAt: item.pubDate ? dayjs(item.pubDate) : dayjs(),
           source: { name: feed.name },
+          raw: item,
         })
       }
 

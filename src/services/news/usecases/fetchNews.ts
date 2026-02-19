@@ -8,7 +8,7 @@ const embrapaAgroUrlBase =
   'https://www.embrapa.br/en/noticias-rss/-/asset_publisher/HA73uEmvroGS/rss'
 const metropolesUrlBase = 'https://www.metropoles.com/entretenimento/feed'
 const hugoGlossUrlBase = 'https://hugogloss.uol.com.br/feed'
-const g1UrlBase = 'https://g1.globo.com/dynamo'
+const g1UrlBase = 'https://g1.globo.com/rss/g1'
 const metropoleRegionalUrlBase = 'https://metropoleonline.com.br/rss/category/celebridades'
 
 function createFetcher(feeds: RSSFeed[]) {
@@ -46,6 +46,6 @@ export const getAgroNews = createFetcher([{ url: `${embrapaAgroUrlBase}`, name: 
 export const getGossipNews = createFetcher([
   { url: `${metropolesUrlBase}`, name: 'Metrópoles - Entretenimento' },
   { url: `${hugoGlossUrlBase}`, name: 'Hugo Gloss' },
-  { url: `${g1UrlBase}/pop-arte/rss2.xml`, name: 'G1 - Pop & Arte' },
+  { url: `${g1UrlBase}/pop-arte/`, name: 'G1 - Pop & Arte' },
   { url: `${metropoleRegionalUrlBase}`, name: 'Metrópole Regional - Celebridades' },
 ])

@@ -8,6 +8,7 @@ export interface NewsArticle {
   url: string
   publishedAt: Dayjs
   source: { name: string }
+  raw?: any
 }
 
 export interface NewsProvider {
