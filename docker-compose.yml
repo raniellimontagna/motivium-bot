@@ -4,7 +4,7 @@ services:
     image: ${DOCKER_USERNAME}/motivium-bot:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     container_name: motivium-bot
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
