@@ -62,6 +62,7 @@ jobs:
             SPACE_NEWS_CHANNELS_IDS=${{ secrets.SPACE_NEWS_CHANNELS_IDS }}
             BRAZIL_NEWS_CHANNELS_IDS=${{ secrets.BRAZIL_NEWS_CHANNELS_IDS }}
             ECONOMY_NEWS_CHANNELS_IDS=${{ secrets.ECONOMY_NEWS_CHANNELS_IDS }}
+            GOSSIP_NEWS_CHANNELS_IDS=${{ secrets.GOSSIP_NEWS_CHANNELS_IDS }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             WEATHER_API_KEY=${{ secrets.WEATHER_API_KEY }}
             DB_USER=${{ secrets.DB_USER }}
