@@ -17,19 +17,15 @@ export class GeminiProvider implements AIProvider {
     const historyContext = history.map((msg) => `(${msg.user}): ${msg.content}`).join('\n')
     const fullPrompt = `${SYSTEM_INSTRUCTIONS}\n\nHistórico da conversa:\n${historyContext}\n\nMensagem do usuário: ${message}`
 
-    try {
-      const result = await this.client.models.generateContent({
-        model: 'gemini-flash-latest',
-        contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-        config: {
-          maxOutputTokens: 1024,
-          temperature: 1,
-        },
-      })
+    const result = await this.client.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+      config: {
+        maxOutputTokens: 1024,
+        temperature: 1,
+      },
+    })
 
-      return result.text || null
-    } catch (error) {
-      throw error
-    }
+    return result.text || null
   }
 }
